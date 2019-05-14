@@ -5,16 +5,12 @@
         2、配置文件是一个格式正确的xml文件 也可编程实现打印内部状态，例如： LoggerContext lc = (LoggerContext)
           LoggerFactory.getILoggerFactory(); StatusPrinter.print(lc);
 -->
-<!--debug="true" -->
 <!--
-    说明：自动扫描该配置文件，若有修改则重新加载该配置文件
--->
-<!-- scan="true" -->
-<!--
-    说明：配置自动扫面时间间隔（单位可以是：milliseconds, seconds, minutes
+    1. debug="true" 自动扫描该配置文件，若有修改则重新加载该配置文件
+    2. scan="true" 说明：配置自动扫面时间间隔（单位可以是：milliseconds, seconds, minutes
     or hours，默认为：milliseconds）， 默认为1分钟，scan="true"时该配置才会生效
--->
-<!-- scanPeriod="30 seconds"-->
+    3. scanPeriod="30 seconds
+ -->
 
 <configuration debug="false" scan="true" scanPeriod="30 seconds" packagingData="true">
     <!--定义变量:通过<property>定义的值会被插入到logger上下文中，可以使“${}”来使用变量-->
