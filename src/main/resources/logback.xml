@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    说明：打印logback内部状态（默认当logback运行出错时才会打印内部状态 ），配置该属性后打印条件如下（同时满足）：
+        1、找到配置文件
+        2、配置文件是一个格式正确的xml文件 也可编程实现打印内部状态，例如： LoggerContext lc = (LoggerContext)
+          LoggerFactory.getILoggerFactory(); StatusPrinter.print(lc);
+-->
+<!--debug="true" -->
+<!--
+    说明：自动扫描该配置文件，若有修改则重新加载该配置文件
+-->
+<!-- scan="true" -->
+<!--
+    说明：配置自动扫面时间间隔（单位可以是：milliseconds, seconds, minutes
+    or hours，默认为：milliseconds）， 默认为1分钟，scan="true"时该配置才会生效
+-->
+<!-- scanPeriod="30 seconds"-->
+
+<configuration debug="false" scan="true" scanPeriod="30 seconds" packagingData="true">
+    <!--定义变量:通过<property>定义的值会被插入到logger上下文中，可以使“${}”来使用变量-->
+    <property name="CONTEXT_NAME" value="logback-test" />
+    <!--
+            1. key: 标识此<timestamp> 的名字；
+　　　　     2. datePattern: 设置将当前时间（解析配置文件的时间）转换为字符串的模式，遵循java.txt.SimpleDateFormat的格式。
+     -->
+    <timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss"/>
+
+    <!-- 设置 logger context 名称,一旦设置不可改变，默认为default -->
+    <contextName>MyWebProject</contextName>
+
+    <!--<appender>是<configuration>的子节点，是负责写日志的组件。有两个必要属性name和class。
+                1. name指定appender名称，
+                2. class指定appender的实现类
+     -->
+    <!--输出到控制台-->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--输出到文件:类型1-->
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+       <!-- 被写入的文件名，可以是相对目录，也可以是绝对目录，如果上级目录不存在会自动创建，没有默认值。 -->
+　　　　<file>testFile.log</file>
+       <!--<append>：如果是 true，日志被追加到文件结尾，如果是 false，清空现存文件，默认是true。-->
+　　　　<append>true</append>
+　　　　<encoder>
+　　　　　　<pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
+　　　　</encoder>
+　　</appender>
+
+    <!--输出到文件：类型2-->
+    <!--还有SocketAppender、SMTPAppender、DBAppender、SyslogAppender、SiftingAppender，并不常用-->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 被写入的文件名，可以是相对目录，也可以是绝对目录，如果上级目录不存在会自动创建，没有默认值。 -->
+        <file>./my_log.log</file>
+        <!--<append>：如果是 true，日志被追加到文件结尾，如果是 false，清空现存文件，默认是true。-->
+        <append>true</append>
+        <!--当发生滚动时，决定RollingFileAppender的行为，涉及文件移动和重命名。属性class定义具体的滚动策略类-->
+        <!-- TimeBasedRollingPolicy:最常用的滚动策略，它根据时间来制定滚动策略，既负责滚动也负责触发滚动-->
+        <!-- 文件滚动策略根据%d{patter}中的“patter”而定，此处为每天产生一个文件 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 归档文件名“.zip或.gz结尾”,表示归档文件自动压缩 -->
+            <FileNamePattern>./my_log%d{yyyyMMdd}.log.zip</FileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+        <!--当发生滚动时，决定RollingFileAppender的行为，涉及文件移动和重命名。属性class定义具体的滚动策略类-->
+        <!--SizeBasedTriggeringPolicy:查看当前活动文件的大小，如果超过指定大小会告知RollingFileAppender 触发当前活动文件滚动-->
+        <!--当发生滚动时的行为-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <!-- 必须包含“%i”例如，假设最小值和最大值分别为1和2，命名模式为 mylog%i.log,
+                 会产生归档文件mylog1.log和mylog2.log。还可以指定文件压缩选项，
+                 例如，mylog%i.log.gz 或者 没有log%i.log.zip -->
+            <fileNamePattern>renhai%i.log</fileNamePattern>
+            <!-- 窗口索引最小值 -->
+            <minIndex>1</minIndex>
+            <!-- 窗口索引最大值 -->
+            <maxIndex>10</maxIndex>
+        </rollingPolicy>
+
+        <!---激活滚动的条件:告知 RollingFileAppender何时激活滚动-->
+        <!--FixedWindowRollingPolicy:根据固定窗口算法重命名文件的滚动策略-->
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>20MB</maxFileSize>
+        </triggeringPolicy>
+
+        <!-- <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+          rollover daily
+          <fileNamePattern>mylog-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+           each file should be at most 30MB, keep 60 days worth of history, but at most 20GB
+           <maxFileSize>30MB</maxFileSize>
+           <maxHistory>60</maxHistory>
+           <totalSizeCap>20GB</totalSizeCap>
+        </rollingPolicy> -->
+
+        <!--对记录事件进行格式化-->
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS}[%-5level][%thread]%logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 用来设置某一个 包 或者具体的某一个 类 的日志打印级别、以及指定<appender>,
+            name:用来指定受此logger约束的某一个包或者具体的某一个类。
+            level:用来设置打印级别，大小写无关：TRACE, DEBUG, INFO, WARN, ERROR, ALL 和 OFF，还有一个特俗值INHERITED或者同义词NULL，代表强制执行上级的级别。如果未设置此属性，那么当前loger将会继承上级的级别。
+            additivity:是否向上级logger传递打印信息。默认是true。(这个logger的上级就是上面的root)
+            <logger>可以包含零个或多个<appender-ref>元素，标识这个appender将会添加到这个logger。-->
+    <!-- 日志级别若没显示定义，则继承最近的父logger（该logger需显示定义level,直到rootLogger）的日志级别-->
+    <!-- logger的appender默认具有累加性（默认日志输出到当前logger的appender和所有祖先logger的appender中），可通过配置 “additivity”属性修改默认行为-->
+    <logger name="com.yinz"  level="debug" additivity="false" >
+        <appender-ref ref="FILE"/>
+    </logger>
+
+    <!-- 至多只能配置一个root -->
+    <root level="debug">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+    </root>
+</configuration>
